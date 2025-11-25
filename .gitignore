@@ -6,7 +6,7 @@
 
 ## Binary folders
 **/Debug/
-**/bin/
+# **/bin/
 **/build/
 **/packages/
 
@@ -15,7 +15,6 @@
 *.7z
 
 # tmp
-**/bin/
 **/obj/
 *.tmp
 
