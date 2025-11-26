@@ -37,8 +37,7 @@ namespace calculadora_web_api.Services.SQLServer
         private SqlConnection SqlConexion;
         private SqlDataReader SqlListar;
 
-        private readonly string SqlConnectionString = @"Data Source = .; Initial Catalog = Calc; Integrated Security = True; Encrypt = False;TrustServerCertificate = True";
-
+        private readonly string SqlConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calc;Integrated Security=True;Encrypt=False;TrustServerCertificate=True";
 
 
         /// <summary>
@@ -123,7 +122,28 @@ namespace calculadora_web_api.Services.SQLServer
             return this.SqlListar;
         }
 
+        public void InsertarCalculo(double num1, char op, double num2, double resultado)
+        {
+            try
+            {
+                // Usa esta query que coincide con tu estructura de tabla
+                string query = @"INSERT INTO [Calc].[dbo].[Historial] 
+                        ([Num1], [Op], [Num2], [Result]) 
+                        VALUES (@Num1, @Op, @Num2, @Result)";
 
+                this.SqlConsulta = new SqlCommand(query, this.SqlConexion);
+                this.SqlConsulta.Parameters.AddWithValue("@Num1", num1);
+                this.SqlConsulta.Parameters.AddWithValue("@Op", op);
+                this.SqlConsulta.Parameters.AddWithValue("@Num2", num2);
+                this.SqlConsulta.Parameters.AddWithValue("@Result", resultado);
+
+                this.SqlConsulta.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"[Err]: Error al insertar cálculo: {ex.Message}");
+            }
+        }
 
         public void SelectCalcHistorial()
         {
@@ -134,7 +154,7 @@ namespace calculadora_web_api.Services.SQLServer
             }
             catch (Exception ex)
             {
-                //MessageBox.Show($"[Err]: conexión sql. {ex}");
+                Trace.WriteLine($"[SQL Error]: {ex.Message}");
                 return;
             }
         }
@@ -143,43 +163,26 @@ namespace calculadora_web_api.Services.SQLServer
         {
             try
             {
-
                 char historial_type;
                 switch (type)
                 {
-                    case HistorialType.ADD:
-                        historial_type = '+';
-                        break;
-                    case HistorialType.SUB:
-                        historial_type = '-';
-                        break;
-                    case HistorialType.DIV:
-                        historial_type = '/';
-                        break;
-                    case HistorialType.MUL:
-                        historial_type = '*';
-                        break;
-                    case HistorialType.MOD:
-                        historial_type = '%';
-                        break;
-                    case HistorialType.Fact:
-                        historial_type = '!';
-                        break;
-                    case HistorialType.POW2:
-                        historial_type = '²';
-                        break;
-                    case HistorialType.Raiz:
-                        historial_type = '√';
-                        break;
-                    default:
-                        throw new Exception("Error in Historial search type");
+                    case HistorialType.ADD: historial_type = '+'; break;
+                    case HistorialType.SUB: historial_type = '-'; break;
+                    case HistorialType.DIV: historial_type = '/'; break;
+                    case HistorialType.MUL: historial_type = '*'; break;
+                    case HistorialType.MOD: historial_type = '%'; break;
+                    case HistorialType.Fact: historial_type = '!'; break;
+                    case HistorialType.POW2: historial_type = '²'; break;
+                    case HistorialType.Raiz: historial_type = '√'; break;
+                    default: throw new Exception("Error in Historial search type");
                 }
+
                 this.Select($"SELECT [id], [Num1], [Op], [Num2], [Result] FROM [Calc].[dbo].[Historial] WHERE [Op] = '{historial_type}'");
                 this.SqlListar = this.SqlConsulta.ExecuteReader();
             }
             catch (Exception ex)
             {
-                //MessageBox.Show($"[Err]: conexión sql. {ex}");
+                Trace.WriteLine($"[SQL Error]: {ex.Message}");
                 return;
             }
         }

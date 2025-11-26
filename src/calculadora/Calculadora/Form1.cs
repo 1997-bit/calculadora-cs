@@ -38,8 +38,7 @@ namespace Calculadora
 
         private void SqlConnectionHistorial()
         {
-            string SqlConnectionString = @"Data Source =.; Initial Catalog = Calc; Integrated Security =True; Encrypt=False; TrustServerCertificate=True";
-
+            string SqlConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calc;Integrated Security=True;Encrypt=False;TrustServerCertificate=True";
             try
             {
                 this.SqlConexion = new SqlConnection(SqlConnectionString);
@@ -73,7 +72,7 @@ namespace Calculadora
         private void SqlInsert()
         {
 
-            string SqlConnectionString = @"Data Source = .; Initial Catalog = Calc; Integrated Security = True; Encrypt=False; TrustServerCertificate=True";
+            string SqlConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Calc;Integrated Security=True;Encrypt=False;TrustServerCertificate=True";
 
             try
             {

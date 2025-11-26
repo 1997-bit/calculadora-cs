@@ -10,8 +10,19 @@ namespace calculadora_web_api.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.Title = "Home Page";
+            ViewBag.Title = "Cliente Calculadora API";
+            return View();
+        }
 
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
             return View();
         }
     }

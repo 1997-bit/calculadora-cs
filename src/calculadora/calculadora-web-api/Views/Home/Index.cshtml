@@ -1,26 +1,263 @@
-﻿<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="aspnetTitle">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
-            a broad range of clients, including browsers and mobile devices. ASP.NET Web API
-            is an ideal platform for building RESTful applications on the .NET Framework.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
-        </section>>
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora API</title>
+    <style>
+        body {
+            font-family: Verdana;
+            margin: 0 auto;
+            padding: 20px;
+            max-width: 800px;
+        }
+
+        .calculadora {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .calculadora h2 {
+            font-size: xx-large;
+        }
+
+        .grupo {
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input, select {
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100px;
+        }
+
+        button {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #btnCalcular {
+            width: 340px;
+            margin-top: 10px;
+        }
+
+        .historial {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .historial h3 {
+            margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controles-historial {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        th, td {
+            border: 2px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .cargando, .error {
+            padding: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .paginacion {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 5px;
+        }
+
+        .paginacion button {
+            padding: 5px 10px;
+            background: #555;
+        }
+
+        .paginacion button.activo {
+            background: #000;
+        }
+
+        .sin-datos {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculadora">
+        <h2>Calculadora</h2>
+
+        <div class="grupo">
+            <input type="number" id="num1" step="any" pattern="-?\d*\.?\d+" placeholder="Número 1" required>
+            <select id="operacion">
+                <option value="add">+</option>
+                <option value="sub">-</option>
+                <option value="mul">×</option>
+                <option value="div">÷</option>
+                <option value="mod">%</option>
+            </select>
+            <input type="number" id="num2" step="any" pattern="-?\d*\.?\d+" placeholder="Número 2" required>
+        </div>
+        <button id="btnCalcular">Calcular</button>
     </div>
-</main>
+
+    <div class="historial">
+        <h2>Historial de Cálculos</h2>
+
+        <div class="controles-historial">
+            <button id="btnRecargar">↺ Recargar</button>
+        </div>
+        <div id="historial" class="cargando">↺</div>
+
+    </div>
+
+    <script>
+        const API_BASE = '/api/Access';
+
+        const num1 = document.getElementById('num1');
+        const num2 = document.getElementById('num2');
+        const operacion = document.getElementById('operacion');
+        const btnCalcular = document.getElementById('btnCalcular');
+        const historialDiv = document.getElementById('historial');
+
+        btnRecargar.addEventListener('click', cargarHistorial);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            btnCalcular.addEventListener('click', realizarCalculo);
+            cargarHistorial();
+        });
+
+        async function realizarCalculo() {
+            const valor1 = parseFloat(num1.value);
+            const valor2 = parseFloat(num2.value);
+            const op = operacion.value;
+
+            if (isNaN(valor1) || isNaN(valor2)) {
+                alert('Por favor, ingresa números válidos');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/Calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        Num1: valor1,
+                        Operacion: op,
+                        Num2: valor2
+                    })
+                });
+
+
+                const data = await response.json();
+
+                if (data.result === 1) {
+                    num1.value = '';
+                    num2.value = '';
+                    cargarHistorial();
+                } else {
+                    alert('Error al realizar el cálculo');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            }
+        }
+
+        async function cargarHistorial() {
+            historialDiv.textContent = 'Cargando...';
+            historialDiv.className = 'cargando';
+
+            try {
+                const response = await fetch(API_BASE + '/GetAll');
+                const data = await response.json();
+
+                if (data.result === 1 && data.data && data.data.length > 0) {
+                    mostrarHistorial(data.data);
+                } else {
+                    historialDiv.textContent = 'No hay cálculos';
+                    historialDiv.className = '';
+                }
+            } catch (error) {
+                historialDiv.textContent = 'Error al cargar el historial';
+                historialDiv.className = 'error';
+            }
+        }
+
+        function mostrarHistorial(historial) {
+            let tablaHTML = `
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Operación</th>
+                                            <th>Resultado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+            for (let i = 0; i < historial.length; i++) {
+                const calc = historial[i];
+                tablaHTML += `
+                                    <tr>
+                                        <td>${calc.id}</td>
+                                        <td>${calc.num1} ${calc.op} ${calc.num2}</td>
+                                        <td>${calc.result}</td>
+                                    </tr>`;
+            }
+
+            tablaHTML += '</tbody></table>';
+            historialDiv.innerHTML = tablaHTML;
+            historialDiv.className = '';
+        }
+    </script>
+</body>
+</html>
